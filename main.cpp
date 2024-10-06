@@ -85,50 +85,50 @@ void print_array(const std::vector<float>& arr, const std::string& name) {
   std::cout << "]" << std::endl;
 }
 
-void run_test(int N, int K, int S, int P, int D) {
+void run_test(int N, int C_in, int C_out, int K, int S, int P, int D) {
   // 入力とカーネルの初期化
-  std::vector<float> input(N);
-  std::vector<float> kernel(K);
-  for (int i = 0; i < N; ++i) input[i] = (i % 10) + 1; // 1から10の繰り返し
-  for (int i = 0; i < K; ++i) kernel[i] = (i % 3 + 1) * 0.1f; // 0.1, 0.2, 0.3の繰り返し
+  std::vector<float> input(N * C_in);
+  std::vector<float> kernel(K * C_in * C_out);
+  for (int i = 0; i < N * C_in; ++i) input[i] = (i % 10) + 1; // 1から10の繰り返し
+  for (int i = 0; i < K * C_in * C_out; ++i) kernel[i] = (i % 3 + 1) * 0.1f; // 0.1, 0.2, 0.3の繰り返し
 
   // 出力サイズの計算
-  int output_size = (N + 2 * P - D * (K - 1) - 1) / S + 1;
+  int output_size = ((N + 2 * P - D * (K - 1) - 1) / S + 1) * C_out;
   std::vector<float> output(output_size);
 
   // conv1d関数の呼び出し
-  conv1d(input.data(), kernel.data(), output.data(), N, K, S, P, D);
+  conv1d(input.data(), kernel.data(), output.data(), N, C_in, C_out, K, S, P, D);
 
   // 結果の表示
   std::cout << "Conv1D Test Results:" << std::endl;
-  std::cout << "Parameters: N=" << N << ", K=" << K << ", S=" << S 
-            << ", P=" << P << ", D=" << D << std::endl;
+  std::cout << "Parameters: N=" << N << ", C_in=" << C_in << ", C_out=" << C_out 
+            << ", K=" << K << ", S=" << S << ", P=" << P << ", D=" << D << std::endl;
   print_array(input, "Input");
   print_array(kernel, "Kernel");
   print_array(output, "Output");
   std::cout << std::endl;
 }
 
-void benchmark_conv1d(int N, int K, int S, int P, int D, int num_runs) {
+void benchmark_conv1d(int N, int C_in, int C_out, int K, int S, int P, int D, int num_runs) {
   // 入力とカーネルの初期化
-  std::vector<float> input(N);
-  std::vector<float> kernel(K);
+  std::vector<float> input(N * C_in);
+  std::vector<float> kernel(K * C_in * C_out);
   
   // ランダムな値で初期化
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_real_distribution<> dis(-1.0, 1.0);
-  for (int i = 0; i < N; ++i) input[i] = dis(gen);
-  for (int i = 0; i < K; ++i) kernel[i] = dis(gen);
+  for (int i = 0; i < N * C_in; ++i) input[i] = dis(gen);
+  for (int i = 0; i < K * C_in * C_out; ++i) kernel[i] = dis(gen);
 
   // 出力サイズの計算
-  int output_size = (N + 2 * P - D * (K - 1) - 1) / S + 1;
+  int output_size = ((N + 2 * P - D * (K - 1) - 1) / S + 1) * C_out;
   std::vector<float> output(output_size);
 
   // ベンチマーク実行
   auto start = std::chrono::high_resolution_clock::now();
   for (int i = 0; i < num_runs; ++i) {
-      conv1d(input.data(), kernel.data(), output.data(), N, K, S, P, D);
+      conv1d(input.data(), kernel.data(), output.data(), N, C_in, C_out, K, S, P, D);
   }
   auto end = std::chrono::high_resolution_clock::now();
 
@@ -138,12 +138,13 @@ void benchmark_conv1d(int N, int K, int S, int P, int D, int num_runs) {
 
   // 結果の表示
   std::cout << "C++ Conv1D Benchmark Results:" << std::endl;
-  std::cout << "Parameters: N=" << N << ", K=" << K << ", S=" << S 
-            << ", P=" << P << ", D=" << D << std::endl;
+  std::cout << "Parameters: N=" << N << ", C_in=" << C_in << ", C_out=" << C_out 
+            << ", K=" << K << ", S=" << S << ", P=" << P << ", D=" << D << std::endl;
   std::cout << "Number of runs: " << num_runs << std::endl;
   std::cout << "Average execution time: " << avg_time << " ms" << std::endl;
   std::cout << std::endl;
 }
+
 
 // Benchmark function
 // void run_benchmark(int batch_size, int in_channels, int out_channels, 
@@ -208,9 +209,14 @@ void run_benchmark() {
 }
 
 int main() {
-  run_test(60, 6, 3, 3, 1);
+  // run_test(60, 6, 3, 3, 1);
+  //
+  // benchmark_conv1d(10000, 101, 1, 50, 1, 100);
+    // テストの実行
+  run_test(10, 2, 3, 3, 1, 0, 1);
 
-  benchmark_conv1d(10000, 101, 1, 50, 1, 100);
+  // ベンチマークの実行
+  benchmark_conv1d(1000, 3, 5, 5, 1, 1, 1, 1000);
 
   const int batch_size = 1;
   const int in_channels = 2;
