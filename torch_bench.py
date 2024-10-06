@@ -52,7 +52,7 @@ if __name__ == "__main__":
     input_height = 224
     input_width = 224
     kernel_size = 3
-    num_iterations = 1000
+    num_iterations = 10
     
     # Run benchmark
     run_benchmark(batch_size, in_channels, out_channels, input_height, input_width, kernel_size, num_iterations)

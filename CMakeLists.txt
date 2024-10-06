@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add all source files
-set(SOURCE_FILES main.cpp im2col.cpp conv2d.cpp)
+set(SOURCE_FILES main.cpp im2col.cpp conv2d.cpp conv1d.cpp)
 
 # Add the executable
 add_executable(conv2d_executable ${SOURCE_FILES})
